@@ -6,11 +6,12 @@ namespace Uc\HttpTrafficLogger\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response;
 use Uc\HttpTrafficLogger\TrafficManager;
 
 /**
- * LogHttpTraffic middleware efficiently captures and records HTTP request and response data exchanged between clients and servers.
+ * LogHttpTraffic middleware efficiently captures and records HTTP request and response data exchanged between clients
+ * and servers.
  */
 class LogHttpTraffic
 {
@@ -22,10 +23,10 @@ class LogHttpTraffic
     /**
      * Handle an incoming request.
      *
-     * @param \Illuminate\Http\Request                                        $request
-     * @param \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response) $next
+     * @param \Illuminate\Http\Request                                                         $request
+     * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
      *
-     * @return \Illuminate\Http\Response
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function handle(Request $request, Closure $next): Response
     {

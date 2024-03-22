@@ -6,7 +6,7 @@ namespace Uc\HttpTrafficLogger;
 
 use DateTimeImmutable;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\FileBag;
 use Symfony\Component\HttpFoundation\HeaderBag;
 use Symfony\Component\HttpFoundation\InputBag;
@@ -137,7 +137,7 @@ final class Record
     /**
      * Capture given response.
      *
-     * @param \Illuminate\Http\Response $response
+     * @param \Symfony\Component\HttpFoundation\Response $response
      *
      * @return void
      */
@@ -148,7 +148,7 @@ final class Record
         $this->calculateDuration();
         $this->responseHeaders = $response->headers;
         $this->responseBody = $response->getContent();
-        $this->status = $response->status();
+        $this->status = $response->getStatusCode();
     }
 
     /**
