@@ -1,0 +1,39 @@
+{
+    "name": "ucraft-com/http-traffic-logger",
+    "description": "The \"http-traffic-logger\" package efficiently captures and records HTTP request and response data exchanged between clients and servers. With comprehensive logging functionalities, it facilitates monitoring and analysis of web traffic, providing valuable insights for debugging, security auditing, and performance optimization purposes.",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Uc\\HttpTrafficLogger\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Tigran Mesropyan",
+            "email": "tiko@ucraft.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=8.1",
+        "ucraft-com/kafka-producer": "1.1.1",
+        "symfony/uid": "6.4.x-dev"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Uc\\HttpTrafficLogger\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Uc\\HttpTrafficLogger\\HttpTrafficLoggerServiceProvider"
+            ]
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "9.6.x-dev",
+        "orchestra/testbench": "8.x-dev"
+    }
+}
