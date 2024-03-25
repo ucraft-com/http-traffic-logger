@@ -77,9 +77,9 @@ final class Record
     protected string|false $responseBody;
 
     /**
-     * @var \Symfony\Component\HttpFoundation\InputBag HTTP cookies of the request
+     * @var array HTTP cookies of the request
      */
-    protected InputBag $requestCookies;
+    protected array $requestCookies;
 
     /**
      * @var \Symfony\Component\HttpFoundation\FileBag Metadata of the uploaded files
@@ -129,7 +129,7 @@ final class Record
         $this->method = $request->method();
         $this->query = $request->query;
         $this->requestHeaders = $request->headers;
-        $this->requestCookies = $request->cookies;
+        $this->requestCookies = $request->cookies->all();
         $this->requestBody = $request->getContent();
         $this->uploadedFiles = $request->files;
     }
@@ -180,7 +180,7 @@ final class Record
                 'method'         => $this->method,
                 'query'          => json_encode($this->query->all()),
                 'req_headers'    => json_encode($this->filterHiddenHeaders($this->requestHeaders)),
-                'req_cookies'    => json_encode($this->filterCookiesByKey($this->requestCookies->all())),
+                'req_cookies'    => json_encode($this->filterCookiesByKey($this->requestCookies)),
                 'req_body'       => $this->requestBody,
                 'uploaded_files' => json_encode($this->prepareUploadedFilesMetadata($this->uploadedFiles)),
                 'created_at'     => $this->createdAt->format('Y-m-d\TH:i:s'),

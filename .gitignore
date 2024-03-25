@@ -1,5 +1,6 @@
 /vendor/
 ./.idea
+.idea
 
 # Laravel 4 specific
 bootstrap/compiled.php
