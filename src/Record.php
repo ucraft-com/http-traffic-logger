@@ -311,6 +311,16 @@ final class Record
     }
 
     /**
+     * Get UUID of the record.
+     *
+     * @return \Symfony\Component\Uid\UuidV4
+     */
+    public function getUuid(): UuidV4
+    {
+        return $this->uuid;
+    }
+
+    /**
      * Determine whether the request is captured.
      *
      * @return bool

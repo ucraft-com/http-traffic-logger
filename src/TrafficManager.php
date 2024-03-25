@@ -6,11 +6,13 @@ namespace Uc\HttpTrafficLogger;
 
 use DateTimeImmutable;
 use Illuminate\Events\Dispatcher;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Uc\KafkaProducer\Events\ProduceMessageEvent;
 use Uc\KafkaProducer\MessageBuilder;
 
 use function config;
+use function json_encode;
 
 /**
  * TrafficManager is responsible for:
@@ -23,6 +25,7 @@ class TrafficManager
 {
     public function __construct(
         protected Dispatcher $dispatcher,
+        protected Filesystem $filesystem,
     ) {
     }
 
@@ -51,11 +54,15 @@ class TrafficManager
      */
     public function record(Record $record): void
     {
+        $relativePath = config('http-traffic-logger.log_dir');
+        $path = $relativePath.DIRECTORY_SEPARATOR.$record->getUuid().'.json';
+        $this->filesystem->put($path, json_encode($record->dump(), depth: 1024));
+
         $builder = new MessageBuilder();
         $message = $builder
             ->setTopicName(config('http-traffic-logger.destination_kafka_topic'))
             ->setKey($record->getCreatedAt()->format('c'))
-            ->setBody($record->dump())
+            ->setBody(['cmd' => 'log-http-traffic', 'args' => ['log-file' => $path]])
             ->getMessage();
 
         $this->dispatcher->dispatch(
