@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Uc\HttpTrafficLogger\TrafficManager;
 
+use function config;
+use function in_array;
+
 /**
  * LogHttpTraffic middleware efficiently captures and records HTTP request and response data exchanged between clients
  * and servers.
@@ -30,6 +33,12 @@ class LogHttpTraffic
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Check whether the traffic should be logged or not.
+        if (!config('http-traffic-logger.enabled') ||
+            !in_array($request->getMethod(), config('http-traffic-logger.request_methods'))) {
+            return $next($request);
+        }
+
         $record = $this->trafficManager->capture($request);
         $response = $next($request);
 

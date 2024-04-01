@@ -7,7 +7,7 @@ namespace Uc\HttpTrafficLogger\Tests\Unit;
 use DateTimeImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use PHPUnit\Framework\TestCase;
+use Uc\HttpTrafficLogger\Tests\TestCase;
 use Symfony\Component\HttpFoundation\Cookie;
 use Uc\HttpTrafficLogger\Record;
 

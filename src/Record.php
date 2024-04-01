@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Uid\UuidV4;
 
+use function config;
 use function json_encode;
 use function array_filter;
 use function in_array;
@@ -31,10 +32,7 @@ final class Record
         'authorization',
     ];
 
-    protected const hiddenCookies = [
-        ':access-token',
-        'laravel_session',
-    ];
+    protected readonly array $hiddenCookies;
 
     /**
      * @var \Symfony\Component\Uid\UuidV4 Unique identifier of the record
@@ -113,6 +111,7 @@ final class Record
         protected readonly DateTimeImmutable $createdAt,
     ) {
         $this->uuid = Uuid::v4();
+        $this->hiddenCookies = [config('session.cookie'), ':access-token'];
     }
 
     /**
@@ -236,7 +235,7 @@ final class Record
         foreach ($cookie as &$value) {
             $cookieItems = explode(';', $value);
             $filteredCookieItems = array_filter($cookieItems, function ($value) {
-                foreach (self::hiddenCookies as $hiddenCookie) {
+                foreach ($this->hiddenCookies as $hiddenCookie) {
                     if (str_contains($value, $hiddenCookie)) {
                         return false;
                     }
@@ -260,7 +259,7 @@ final class Record
     protected function filterCookiesByKey(array $cookies): array
     {
         return array_filter($cookies, function ($key) {
-            foreach (self::hiddenCookies as $hiddenCookie) {
+            foreach ($this->hiddenCookies as $hiddenCookie) {
                 if (str_contains($key, $hiddenCookie)) {
                     return false;
                 }
