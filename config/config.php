@@ -6,7 +6,7 @@ return [
     /*
      | HTTP traffic will only be logged if this setting is set to true.
      */
-    'enabled'                 => env('HTTP_TRAFFIC_LOGGER_ENABLED', true),
+    'enabled'                 => env('HTTP_TRAFFIC_LOGGER_ENABLED', false),
 
     /*
      | Relative path where the traffic logs will be stored for later processing.

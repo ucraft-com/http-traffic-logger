@@ -22,6 +22,8 @@ use function explode;
 use function implode;
 use function str_contains;
 use function strtolower;
+use function strpos;
+use function substr_replace;
 
 /**
  * Class Record represents captured information.
@@ -32,7 +34,19 @@ final class Record
         'authorization',
     ];
 
+    /**
+     * @var array List of sensitive cookies that should be cleared from the log.
+     */
     protected readonly array $hiddenCookies;
+
+    /**
+     * @var array|string[] List of sensitive tokens that should be cleared from the log.
+     */
+    protected array $sensitiveTokens = [
+        '"password"',
+        '"oldPassword"',
+        '"passwordConfirmation"',
+    ];
 
     /**
      * @var \Symfony\Component\Uid\UuidV4 Unique identifier of the record
@@ -129,7 +143,7 @@ final class Record
         $this->query = $request->query;
         $this->requestHeaders = $request->headers;
         $this->requestCookies = $request->cookies->all();
-        $this->requestBody = $request->getContent();
+        $this->requestBody = $this->clearSensitiveData($request->getContent());
         $this->uploadedFiles = $request->files;
     }
 
@@ -148,6 +162,56 @@ final class Record
         $this->responseHeaders = $response->headers;
         $this->responseBody = $response->getContent();
         $this->status = $response->getStatusCode();
+    }
+
+    /**
+     * Clear sensitive data from the given content.
+     *
+     * @param string $content
+     *
+     * @return string
+     */
+    protected function clearSensitiveData(string $content): string
+    {
+        foreach ($this->sensitiveTokens as $sensitiveToken) {
+            $content = $this->clearSensitiveToken($content, $sensitiveToken);
+        }
+
+        return $content;
+    }
+
+    /**
+     * Clear sensitive token from the given content.
+     *
+     * @param string $content
+     * @param string $token
+     *
+     * @return string
+     */
+    protected function clearSensitiveToken(string $content, string $token): string
+    {
+        // Find the position of the first occurrence of "password"
+        $position = strpos($content, $token);
+
+        // If $token is found
+        if ($position !== false) {
+            // Find the position of the next '"' character after $token
+            $startQuote = strpos($content, '"', $position + strlen($token) + 1);
+
+            // If '"' is found after $token
+            if ($startQuote !== false) {
+                // Find the position of the next '"' character after the first '"'
+                $endQuote = strpos($content, '"', $startQuote + 1);
+
+                // If both start and end '"' are found
+                if ($endQuote !== false) {
+                    // Remove the content between the double quotes
+                    $content = substr_replace($content, '', $startQuote + 1, $endQuote - $startQuote - 1);
+                }
+            }
+        }
+
+        return $content;
     }
 
     /**
