@@ -6,6 +6,7 @@ namespace Uc\HttpTrafficLogger;
 
 use DateTimeImmutable;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\FileBag;
 use Symfony\Component\HttpFoundation\HeaderBag;
@@ -24,6 +25,7 @@ use function str_contains;
 use function strtolower;
 use function strpos;
 use function substr_replace;
+use function is_array;
 
 /**
  * Class Record represents captured information.
@@ -343,12 +345,10 @@ final class Record
     protected function prepareUploadedFilesMetadata(FileBag $fileBag): array
     {
         $metadata = [];
-        /**
-         * @var string                                              $name
-         * @var \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile
-         */
-        foreach ($fileBag as $name => $uploadedFile) {
-            $metadata[$name] = [
+        $files = $this->prepareUploadedFiles($fileBag);
+
+        foreach ($files as $uploadedFile) {
+            $metadata[] = [
                 'fileName'                => $uploadedFile->getFilename(),
                 'path'                    => $uploadedFile->getPath(),
                 'realpath'                => $uploadedFile->getRealPath(),
@@ -371,6 +371,28 @@ final class Record
         }
 
         return $metadata;
+    }
+
+    /**
+     * Collect uploaded files into a single array.
+     *
+     * @param \Symfony\Component\HttpFoundation\FileBag|array $fileBag
+     *
+     * @return array<UploadedFile>
+     */
+    protected function prepareUploadedFiles(FileBag|array $fileBag): array
+    {
+        $items = [];
+
+        foreach ($fileBag as $item) {
+            if ($item instanceof UploadedFile) {
+                $items[] = $item;
+            } elseif (is_array($item)) {
+                $items = [...$items, ...$this->prepareUploadedFiles($item)];
+            }
+        }
+
+        return $items;
     }
 
     /**
