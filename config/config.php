@@ -9,10 +9,14 @@ return [
     'enabled'                 => env('HTTP_TRAFFIC_LOGGER_ENABLED', false),
 
     /*
-     | Relative path where the traffic logs will be stored for later processing.
-     | Path is relative because the actual storage instance will be passed to the logger service.
+     | Google Cloud Storage bucket where the traffic logs will be stored for later processing.
      */
-    'log_dir'                 => env('HTTP_TRAFFIC_LOG_DIR', 'http_traffic_logs'),
+    'log_bucket'              => env('HTTP_TRAFFIC_LOGGER_BUCKET', 'ucraft-http-traffic-logs'),
+
+    /*
+     | Full path of the credentials json file.
+     */
+    'key_file_path'           => env('HTTP_TRAFFIC_LOGGER_KEY_FILE_PATH'),
 
     /*
      | Name of the Apache Kafka topic where the captured data should be produced.
@@ -24,13 +28,13 @@ return [
      */
     'request_methods'         => [
         'GET',
-//        'HEAD',
+        //        'HEAD',
         'POST',
         'PUT',
         'DELETE',
-//        'CONNECT',
-//        'OPTIONS',
-//        'TRACE',
+        //        'CONNECT',
+        //        'OPTIONS',
+        //        'TRACE',
         'PATCH',
     ],
 ];

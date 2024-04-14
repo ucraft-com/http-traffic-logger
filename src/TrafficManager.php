@@ -6,10 +6,10 @@ namespace Uc\HttpTrafficLogger;
 
 use DateTimeImmutable;
 use Illuminate\Events\Dispatcher;
-use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Uc\KafkaProducer\Events\ProduceMessageEvent;
 use Uc\KafkaProducer\MessageBuilder;
+use Google\Cloud\Storage\StorageClient;
 
 use function config;
 use function json_encode;
@@ -25,7 +25,6 @@ class TrafficManager
 {
     public function __construct(
         protected Dispatcher $dispatcher,
-        protected Filesystem $filesystem,
     ) {
     }
 
@@ -54,15 +53,24 @@ class TrafficManager
      */
     public function record(Record $record): void
     {
-        $relativePath = config('http-traffic-logger.log_dir');
-        $path = $relativePath.DIRECTORY_SEPARATOR.$record->getUuid().'.json';
-        $this->filesystem->put($path, json_encode($record->dump(), depth: 1024));
+        $storage = new StorageClient([
+            'keyFilePath' => config('http-traffic-logger.key_file_path'),
+        ]);
+        $bucket = $storage->bucket(config('http-traffic-logger.log_bucket'));
+        $filename = date('Y-m-d') ."/".$record->getUuid().'.json';
+        // Upload a file to the bucket
+        $bucket->upload(
+            json_encode($record->dump(), depth: 1024), // Open the local file in read mode
+            [
+                'name' => $filename,
+            ]
+        );
 
         $builder = new MessageBuilder();
         $message = $builder
             ->setTopicName(config('http-traffic-logger.destination_kafka_topic'))
             ->setKey($record->getCreatedAt()->format('c'))
-            ->setBody(['cmd' => 'log-http-traffic', 'args' => ['log-file' => $path]])
+            ->setBody(['cmd' => 'log-http-traffic', 'args' => ['log-file' => $filename]])
             ->getMessage();
 
         $this->dispatcher->dispatch(
