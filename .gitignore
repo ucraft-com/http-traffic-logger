@@ -1,5 +1,7 @@
 /vendor/
 ./.idea
+.idea/
+/.idea/
 .idea
 
 # Laravel 4 specific

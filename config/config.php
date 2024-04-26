@@ -9,14 +9,14 @@ return [
     'enabled'                 => env('HTTP_TRAFFIC_LOGGER_ENABLED', false),
 
     /*
-     | Google Cloud Storage bucket where the traffic logs will be stored for later processing.
+     | Redis database connection where the traffic logs will be stored for later processing.
      */
-    'log_bucket'              => env('HTTP_TRAFFIC_LOGGER_BUCKET', 'ucraft-http-traffic-logs'),
+    'redis_connection'              => env('HTTP_TRAFFIC_LOGGER_REDIS_CONNECTION', 'default'),
 
     /*
-     | Full path of the credentials json file.
+     | Key of the Redis data structure where the logs will be stored for later processing.
      */
-    'key_file_path'           => env('HTTP_TRAFFIC_LOGGER_KEY_FILE_PATH'),
+    'redis_key'           => env('HTTP_TRAFFIC_LOGGER_REDIS_KEY', 'http-traffic-logs'),
 
     /*
      | Name of the Apache Kafka topic where the captured data should be produced.
