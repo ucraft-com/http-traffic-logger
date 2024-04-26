@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Uc\HttpTrafficLogger;
 
 use DateTimeImmutable;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
@@ -111,6 +112,11 @@ final class Record
     protected int $status;
 
     /**
+     * @var mixed Unique identifier of the authenticated user
+     */
+    protected mixed $authIdentifier = null;
+
+    /**
      * @var bool Define whether the request is already captured or not
      */
     private bool $requestCaptured = false;
@@ -147,6 +153,10 @@ final class Record
         $this->requestCookies = $request->cookies->all();
         $this->requestBody = $this->clearSensitiveData($request->getContent());
         $this->uploadedFiles = $request->files;
+
+        if (($user = $request->user()) && $user instanceof Authenticatable) {
+            $this->authIdentifier = $user->getAuthIdentifier();
+        }
     }
 
     /**
@@ -241,6 +251,7 @@ final class Record
             // Dump request.
             $result = [
                 'uuid'           => (string)$this->uuid,
+                'user_id'        => $this->authIdentifier,
                 'url'            => $this->url,
                 'method'         => $this->method,
                 'query'          => json_encode($this->query->all()),
