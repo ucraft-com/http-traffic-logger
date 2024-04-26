@@ -7,9 +7,11 @@ namespace Uc\HttpTrafficLogger;
 use DateTimeImmutable;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
+use Throwable;
 use Uc\KafkaProducer\Events\ProduceMessageEvent;
 use Uc\KafkaProducer\MessageBuilder;
-use Google\Cloud\Storage\StorageClient;
 
 use function config;
 use function json_encode;
@@ -53,28 +55,28 @@ class TrafficManager
      */
     public function record(Record $record): void
     {
-        $storage = new StorageClient([
-            'keyFilePath' => config('http-traffic-logger.key_file_path'),
-        ]);
-        $bucket = $storage->bucket(config('http-traffic-logger.log_bucket'));
-        $filename = date('Y-m-d') ."/".$record->getUuid().'.json';
-        // Upload a file to the bucket
-        $bucket->upload(
-            json_encode($record->dump(), depth: 1024), // Open the local file in read mode
-            [
-                'name' => $filename,
-            ]
-        );
+        try {
+            Redis::connection(config('http-traffic-logger.redis_connection'))
+                ->client()
+                ->hSet(
+                    config('http-traffic-logger.redis_key'),
+                    (string)$record->getUuid(),
+                    json_encode($record->dump(), depth: 1024)
+                );
 
-        $builder = new MessageBuilder();
-        $message = $builder
-            ->setTopicName(config('http-traffic-logger.destination_kafka_topic'))
-            ->setKey($record->getCreatedAt()->format('c'))
-            ->setBody(['cmd' => 'log-http-traffic', 'args' => ['log-file' => $filename]])
-            ->getMessage();
+            $builder = new MessageBuilder();
+            $message = $builder
+                ->setTopicName(config('http-traffic-logger.destination_kafka_topic'))
+                ->setKey($record->getCreatedAt()->format('c'))
+                ->setBody(['cmd' => 'log-http-traffic', 'args' => ['log-key' => (string)$record->getUuid()]])
+                ->getMessage();
 
-        $this->dispatcher->dispatch(
-            new ProduceMessageEvent($message)
-        );
+            $this->dispatcher->dispatch(
+                new ProduceMessageEvent($message)
+            );
+        } catch (Throwable $throwable) {
+            Log::error('Something went wrong during writing the HTTP Traffic logs.');
+            Log::error($throwable->getMessage(), ['http-traffic-logger-error' => $throwable]);
+        }
     }
 }
