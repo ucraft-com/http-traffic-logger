@@ -42,6 +42,7 @@ class LogHttpTraffic
         $record = $this->trafficManager->capture($request);
         $response = $next($request);
 
+        $record->setAuthUser($request->user());
         $record->captureResponse($response);
         $this->trafficManager->record($record);
 
