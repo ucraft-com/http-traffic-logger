@@ -112,9 +112,9 @@ final class Record
     protected int $status;
 
     /**
-     * @var mixed Unique identifier of the authenticated user
+     * @var \Illuminate\Contracts\Auth\Authenticatable|null Instance of the authenticated user
      */
-    protected mixed $authIdentifier = null;
+    protected Authenticatable|null $authUser = null;
 
     /**
      * @var bool Define whether the request is already captured or not
@@ -153,10 +153,6 @@ final class Record
         $this->requestCookies = $request->cookies->all();
         $this->requestBody = $this->clearSensitiveData($request->getContent());
         $this->uploadedFiles = $request->files;
-
-        if (($user = $request->user()) && $user instanceof Authenticatable) {
-            $this->authIdentifier = $user->getAuthIdentifier();
-        }
     }
 
     /**
@@ -251,7 +247,6 @@ final class Record
             // Dump request.
             $result = [
                 'uuid'           => (string)$this->uuid,
-                'user_id'        => $this->authIdentifier,
                 'url'            => $this->url,
                 'method'         => $this->method,
                 'query'          => json_encode($this->query->all()),
@@ -272,6 +267,10 @@ final class Record
                 'status'      => $this->status,
                 'duration'    => $this->duration,
             ];
+        }
+
+        if (null !== $this->authUser) {
+            $result['user_id'] = $this->authUser->getAuthIdentifier();
         }
 
         return $result;
@@ -444,5 +443,25 @@ final class Record
     public function getCreatedAt(): DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    /**
+     * Return authenticated user.
+     *
+     * @return \Illuminate\Contracts\Auth\Authenticatable|null
+     */
+    public function getAuthUser(): ?Authenticatable
+    {
+        return $this->authUser;
+    }
+
+    /**
+     * Set authenticated user.
+     *
+     * @param \Illuminate\Contracts\Auth\Authenticatable|null $authUser
+     */
+    public function setAuthUser(?Authenticatable $authUser): void
+    {
+        $this->authUser = $authUser;
     }
 }
