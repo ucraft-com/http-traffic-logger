@@ -41,7 +41,7 @@ class RecordTest extends TestCase
         $this->assertStringContainsStringIgnoringCase('"foo":"bar"', $dumped['req_cookies']);
         $this->assertStringNotContainsStringIgnoringCase('example.com:access-token', $dumped['req_cookies']);
         $this->assertEquals('qux', $dumped['req_body']);
-        $this->assertNull($dumped['user_id']);
+        $this->assertArrayNotHasKey('user_id', $dumped);
     }
 
     public function testCaptureResponse(): void
