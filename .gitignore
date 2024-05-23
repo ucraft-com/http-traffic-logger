@@ -19,3 +19,7 @@ public_html/hot
 storage/*.key
 .env
 .phpunit.result.cache
+.phpunit.cache
+
+# Ignore backup PHPUnit configuration files
+phpunit.xml.bak
