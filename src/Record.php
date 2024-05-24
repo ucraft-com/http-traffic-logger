@@ -336,7 +336,7 @@ final class Record
     {
         return array_filter($cookies, function ($key) {
             foreach ($this->hiddenCookies as $hiddenCookie) {
-                if (str_contains($key, $hiddenCookie)) {
+                if (str_contains((string)$key, $hiddenCookie)) {
                     return false;
                 }
             }
